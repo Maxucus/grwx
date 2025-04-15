@@ -1,6 +1,6 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-  if (window.innerWidth > 768) return;
+  if (window.innerWidth > 768) return; 
 
   const t922 = document.querySelector('.t922');
   const t744 = document.querySelector('.t744');
