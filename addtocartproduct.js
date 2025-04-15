@@ -1,6 +1,6 @@
-
+<script>
 document.addEventListener("DOMContentLoaded", function () {
-  if (window.innerWidth > 768) return; 
+  if (window.innerWidth > 768) return;
 
   const t922 = document.querySelector('.t922');
   const t744 = document.querySelector('.t744');
@@ -8,31 +8,28 @@ document.addEventListener("DOMContentLoaded", function () {
   if (!productCard) return;
 
   const isT922 = !!t922;
-  const skuBlock = productCard.querySelector(isT922 ? '.t922__title_small' : '.t744__title_small');
-  if (skuBlock) skuBlock.style.display = 'none';
+  const realBtn = document.querySelector(isT922 ? '.t922__btn' : '.t744__btn');
 
   let attempts = 0;
   const wait = setInterval(() => {
-    if (++attempts > 20) return clearInterval(wait);
+    if (++attempts > 30) return clearInterval(wait);
 
-    const priceVal = productCard.querySelector('.js-store-prod-price-val');
-    const priceCur = productCard.querySelector('.js-product-price-currency');
-    const variantSelect = productCard.querySelector('.js-product-edition-option-variants');
-    const productName = productCard.querySelector('.js-product-name')?.textContent?.trim();
-    const productSKU = productCard.querySelector('.js-product-sku');
-    const realBtn = productCard.querySelector(isT922 ? '.t922__btn' : '.t744__btn');
+    const priceVal = document.querySelector('.js-store-prod-price-val');
+    const priceCur = document.querySelector('.js-product-price-currency');
+    const productName = document.querySelector('.js-product-name')?.textContent?.trim();
+    const productSKU = document.querySelector('.js-product-sku');
 
-    if (!priceVal || !priceCur || !variantSelect || !realBtn || !productName || !productSKU) return;
+    const allOptions = [...document.querySelectorAll('.js-product-edition-option')];
+
+    if (!priceVal || !priceCur || !realBtn || !productName || !productSKU || allOptions.length === 0) return;
 
     clearInterval(wait);
 
-    // ⛳ Функция обновления цены и артикула
     const updateSkuAndPrice = () => {
       dynamicPrice.textContent = `${priceVal.textContent.trim()} ${priceCur.textContent.trim()}`;
       skuEl.textContent = `Артикул: ${productSKU.textContent.trim()}`;
     };
 
-    // --- Нижняя плашка ---
     const bar = document.createElement('div');
     bar.style.cssText = `
       position: fixed; bottom: -100px; left: 0; right: 0; z-index: 9999;
@@ -52,12 +49,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     bar.appendChild(triggerBtn);
     document.body.appendChild(bar);
-
     window.addEventListener('scroll', () => {
       bar.style.bottom = window.scrollY > 400 ? '0' : '-100px';
     });
 
-    // --- Popup ---
     const modal = document.createElement('div');
     modal.style.cssText = `
       position: fixed; inset: 0; z-index: 10000; background: rgba(0,0,0,0.5);
@@ -85,39 +80,60 @@ document.addEventListener("DOMContentLoaded", function () {
     dynamicPrice.style.cssText = 'font-size: 16px; font-weight: 600; margin-bottom: 16px;';
     dynamicPrice.textContent = `${priceVal.textContent.trim()} ${priceCur.textContent.trim()}`;
 
-    const weightWrap = document.createElement('div');
-    weightWrap.innerHTML = `<div style="font-size: 16px; font-weight: 600; margin-bottom: 12px;">Фасовка</div>`;
+    contentWrap.append(nameEl, skuEl, dynamicPrice);
 
-    const options = document.createElement('div');
-    options.style.cssText = 'display: flex; flex-wrap: wrap; gap: 10px;';
+    // Обрабатываем каждую группу options
+    allOptions.forEach((group) => {
+      const label = group.querySelector('.js-product-edition-option-name')?.textContent?.trim();
+      const select = group.querySelector('select');
 
-    [...variantSelect.options].forEach((opt, idx) => {
-      const btn = document.createElement('button');
-      btn.innerText = opt.textContent;
-      btn.setAttribute('tabindex', '0');
-      btn.style.cssText = `
-        padding: 8px 14px; border-radius: 50px; border: 1px solid #ccc;
-        background: ${idx === variantSelect.selectedIndex ? '#15b125' : '#f7f7f7'};
-        color: ${idx === variantSelect.selectedIndex ? 'white' : 'black'};
-        font-weight: 500; cursor: pointer;
-      `;
+      if (!label || !select) return;
 
-      btn.addEventListener('click', () => {
-        variantSelect.selectedIndex = idx;
-        variantSelect.dispatchEvent(new Event('change', { bubbles: true }));
+      const weightWrap = document.createElement('div');
+      weightWrap.innerHTML = `<div style="font-size: 16px; font-weight: 600; margin-bottom: 12px;">${label}</div>`;
 
-        [...options.children].forEach((b, i) => {
+      const optionsBox = document.createElement('div');
+      optionsBox.style.cssText = 'display: flex; flex-wrap: wrap; gap: 10px;';
+
+      [...select.options].forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.innerText = opt.textContent;
+        btn.setAttribute('tabindex', '0');
+        btn.style.cssText = `
+          padding: 8px 14px; border-radius: 50px; border: 1px solid #ccc;
+          background: ${idx === select.selectedIndex ? '#15b125' : '#f7f7f7'};
+          color: ${idx === select.selectedIndex ? 'white' : 'black'};
+          font-weight: 500; cursor: pointer;
+        `;
+
+        btn.addEventListener('click', () => {
+          select.selectedIndex = idx;
+          select.dispatchEvent(new Event('change', { bubbles: true }));
+
+          [...optionsBox.children].forEach((b, i) => {
+            b.style.background = i === idx ? '#15b125' : '#f7f7f7';
+            b.style.color = i === idx ? 'white' : 'black';
+          });
+
+          updateSkuAndPrice();
+        });
+
+        optionsBox.appendChild(btn);
+      });
+
+      weightWrap.appendChild(optionsBox);
+      contentWrap.appendChild(weightWrap);
+
+      // Синхронизация при смене значения в основном select
+      select.addEventListener('change', () => {
+        const idx = select.selectedIndex;
+        [...optionsBox.children].forEach((b, i) => {
           b.style.background = i === idx ? '#15b125' : '#f7f7f7';
           b.style.color = i === idx ? 'white' : 'black';
         });
-
         updateSkuAndPrice();
       });
-
-      options.appendChild(btn);
     });
-
-    weightWrap.appendChild(options);
 
     const confirm = document.createElement('button');
     confirm.innerText = 'Добавить';
@@ -126,14 +142,12 @@ document.addEventListener("DOMContentLoaded", function () {
       padding: 14px; border-radius: 10px; font-size: 16px; font-weight: 600;
       border: none; cursor: pointer;
     `;
-
     confirm.addEventListener('click', () => {
       realBtn.click();
       modal.style.display = 'none';
     });
 
-    contentWrap.append(nameEl, skuEl, dynamicPrice);
-    modalContent.append(contentWrap, weightWrap, confirm);
+    modalContent.append(contentWrap, confirm);
     modal.appendChild(modalContent);
     document.body.appendChild(modal);
 
@@ -143,17 +157,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     modal.addEventListener('click', (e) => {
       if (e.target === modal) modal.style.display = 'none';
-    });
-
-    variantSelect.addEventListener('change', () => {
-      const currentIdx = variantSelect.selectedIndex;
-
-      [...options.children].forEach((btn, i) => {
-        btn.style.background = i === currentIdx ? '#15b125' : '#f7f7f7';
-        btn.style.color = i === currentIdx ? 'white' : 'black';
-      });
-
-      updateSkuAndPrice();
     });
 
     const style = document.createElement('style');
@@ -166,4 +169,4 @@ document.addEventListener("DOMContentLoaded", function () {
     document.head.appendChild(style);
   }, 300);
 });
-
+</script>
