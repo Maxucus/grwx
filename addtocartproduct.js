@@ -1,4 +1,3 @@
-<script>
 document.addEventListener("DOMContentLoaded", function () {
   if (window.innerWidth > 768) return;
 
@@ -169,4 +168,3 @@ document.addEventListener("DOMContentLoaded", function () {
     document.head.appendChild(style);
   }, 300);
 });
-</script>
