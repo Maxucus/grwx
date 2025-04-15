@@ -1,21 +1,26 @@
+<script>
 document.addEventListener("DOMContentLoaded", function () {
-  if (window.innerWidth > 768) return; 
-  const productCard = document.querySelector('.t922');
+  if (window.innerWidth > 768) return;
+
+  const t922 = document.querySelector('.t922');
+  const t744 = document.querySelector('.t744');
+  const productCard = t922 || t744;
   if (!productCard) return;
 
-  const skuBlock = document.querySelector('.t922__title_small');
+  const isT922 = !!t922;
+  const skuBlock = productCard.querySelector(isT922 ? '.t922__title_small' : '.t744__title_small');
   if (skuBlock) skuBlock.style.display = 'none';
 
   let attempts = 0;
   const wait = setInterval(() => {
     if (++attempts > 20) return clearInterval(wait);
 
-    const priceVal = document.querySelector('.js-store-prod-price-val');
-    const priceCur = document.querySelector('.js-product-price-currency');
-    const variantSelect = document.querySelector('.js-product-edition-option-variants');
-    const productName = document.querySelector('.js-product-name')?.textContent?.trim();
-    const productSKU = document.querySelector('.js-product-sku');
-    const realBtn = document.querySelector('.t922__btn');
+    const priceVal = productCard.querySelector('.js-store-prod-price-val');
+    const priceCur = productCard.querySelector('.js-product-price-currency');
+    const variantSelect = productCard.querySelector('.js-product-edition-option-variants');
+    const productName = productCard.querySelector('.js-product-name')?.textContent?.trim();
+    const productSKU = productCard.querySelector('.js-product-sku');
+    const realBtn = productCard.querySelector(isT922 ? '.t922__btn' : '.t744__btn');
 
     if (!priceVal || !priceCur || !variantSelect || !realBtn || !productName || !productSKU) return;
 
@@ -80,7 +85,6 @@ document.addEventListener("DOMContentLoaded", function () {
     dynamicPrice.style.cssText = 'font-size: 16px; font-weight: 600; margin-bottom: 16px;';
     dynamicPrice.textContent = `${priceVal.textContent.trim()} ${priceCur.textContent.trim()}`;
 
-    // --- Выбор (варианта)
     const weightWrap = document.createElement('div');
     weightWrap.innerHTML = `<div style="font-size: 16px; font-weight: 600; margin-bottom: 12px;">Фасовка</div>`;
 
@@ -115,7 +119,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     weightWrap.appendChild(options);
 
-    // --- Кнопка подтверждения
     const confirm = document.createElement('button');
     confirm.innerText = 'Добавить';
     confirm.style.cssText = `
@@ -123,6 +126,7 @@ document.addEventListener("DOMContentLoaded", function () {
       padding: 14px; border-radius: 10px; font-size: 16px; font-weight: 600;
       border: none; cursor: pointer;
     `;
+
     confirm.addEventListener('click', () => {
       realBtn.click();
       modal.style.display = 'none';
@@ -133,17 +137,14 @@ document.addEventListener("DOMContentLoaded", function () {
     modal.appendChild(modalContent);
     document.body.appendChild(modal);
 
-    // --- Показываем popup
     triggerBtn.addEventListener('click', () => {
       modal.style.display = 'flex';
     });
 
-    // --- Закрытие popup по клику вне области
     modal.addEventListener('click', (e) => {
       if (e.target === modal) modal.style.display = 'none';
     });
 
-    // --- Обновление popup при изменении основного select
     variantSelect.addEventListener('change', () => {
       const currentIdx = variantSelect.selectedIndex;
 
@@ -155,7 +156,6 @@ document.addEventListener("DOMContentLoaded", function () {
       updateSkuAndPrice();
     });
 
-    // --- Анимация
     const style = document.createElement('style');
     style.textContent = `
       @keyframes slideUp {
@@ -166,3 +166,4 @@ document.addEventListener("DOMContentLoaded", function () {
     document.head.appendChild(style);
   }, 300);
 });
+</script>
