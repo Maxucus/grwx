@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", function () {
-  if (window.innerWidth > 768) return;
+  if (window.innerWidth > 768) return; 
   const productCard = document.querySelector('.t922');
   if (!productCard) return;
 
